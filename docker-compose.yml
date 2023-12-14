@@ -1,0 +1,11 @@
+version: "3"
+services: 
+  database: 
+    image: "postgres:16"
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=desafio
+    ports:
+      - 5432:5432

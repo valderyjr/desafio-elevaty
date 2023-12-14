@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  firstName String   @db.VarChar(255)
+  lastName  String   @db.VarChar(255)
+  email     String   @unique @db.VarChar(255)
+  birthDate DateTime
+
+  // relations
+  creditCards CreditCard[]
+  phone       Phone?
+  address     Address?
+
+  @@map("users")
+}
+
+model Phone {
+  id          String @id @default(uuid())
+  countryCode String @db.VarChar(10)
+  number      String @db.VarChar(20)
+
+  // relations
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  @@map("phones")
+}
+
+model Address {
+  id           String  @id @default(uuid())
+  zipCode      String  @db.Char(8)
+  city         String  @db.VarChar(255)
+  street       String  @db.VarChar(255)
+  number       String  @db.VarChar(255)
+  neighborhood String  @db.VarChar(255)
+  complement   String? @db.VarChar(255)
+
+  // relations
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  @@map("addresses")
+}
+
+model CreditCard {
+  id              String  @id @default(uuid())
+  brand           String  @db.VarChar(255)
+  expirationMonth String  @db.Char(2)
+  expirationYear  String  @db.Char(4)
+  number          String  @db.Char(16)
+  invoiceUrl      String?
+
+  // relations
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  @@map("credit_cards")
+}
