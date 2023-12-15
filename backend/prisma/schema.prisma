@@ -28,7 +28,7 @@ model Phone {
   number      String @db.VarChar(20)
 
   // relations
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @unique
 
   @@map("phones")
@@ -44,7 +44,7 @@ model Address {
   complement   String? @db.VarChar(255)
 
   // relations
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @unique
 
   @@map("addresses")
@@ -53,13 +53,13 @@ model Address {
 model CreditCard {
   id              String  @id @default(uuid())
   brand           String  @db.VarChar(255)
-  expirationMonth String  @db.Char(2)
-  expirationYear  String  @db.Char(4)
+  expirationMonth Int     @db.SmallInt()
+  expirationYear  Int     @db.SmallInt()
   number          String  @db.Char(16)
   invoiceUrl      String?
 
   // relations
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   @@map("credit_cards")
