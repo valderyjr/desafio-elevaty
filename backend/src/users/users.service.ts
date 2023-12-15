@@ -10,7 +10,10 @@ export class UsersService {
   constructor(private readonly prismaClientService: PrismaClientService) {}
 
   private async findUserByEmail(email: string): Promise<User | null> {
-    return await this.prismaClientService.user.findUnique({ where: { email } });
+    return await this.prismaClientService.user.findUnique({
+      where: { email },
+      include: { creditCards: true },
+    });
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -28,16 +31,20 @@ export class UsersService {
         ...createUserDto,
         birthDate: new Date(createUserDto.birthDate),
       },
+      include: { creditCards: true },
     });
   }
 
   async findAll(): Promise<User[]> {
-    return await this.prismaClientService.user.findMany();
+    return await this.prismaClientService.user.findMany({
+      include: { creditCards: true },
+    });
   }
 
   async findOne(id: string): Promise<User> {
     const user = await this.prismaClientService.user.findUnique({
       where: { id },
+      include: { creditCards: true },
     });
 
     if (!user) {
@@ -61,6 +68,7 @@ export class UsersService {
           ? new Date(updateUserDto.birthDate)
           : undefined,
       },
+      include: { creditCards: true },
     });
   }
 
