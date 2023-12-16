@@ -25,9 +25,11 @@ export class CreateCreditCardDto {
   @IsNumber()
   expirationYear: number;
 
+  @IsString()
   @IsCreditCard()
   number: string;
 
+  @IsString()
   @IsOptional()
   invoiceUrl?: string;
 }

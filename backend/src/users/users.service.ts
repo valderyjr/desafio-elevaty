@@ -12,7 +12,7 @@ export class UsersService {
   private async findUserByEmail(email: string): Promise<User | null> {
     return await this.prismaClientService.user.findUnique({
       where: { email },
-      include: { creditCards: true },
+      include: { creditCards: true, phone: true },
     });
   }
 
@@ -22,7 +22,7 @@ export class UsersService {
     if (hasUserWithEmail) {
       throw new HttpException(
         ERROR_MESSAGES_ENUM.USER_ALREADY_EXISTS,
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.CONFLICT,
       );
     }
 
@@ -31,20 +31,20 @@ export class UsersService {
         ...createUserDto,
         birthDate: new Date(createUserDto.birthDate),
       },
-      include: { creditCards: true },
+      include: { creditCards: true, phone: true },
     });
   }
 
   async findAll(): Promise<User[]> {
     return await this.prismaClientService.user.findMany({
-      include: { creditCards: true },
+      include: { creditCards: true, phone: true },
     });
   }
 
   async findOne(id: string): Promise<User> {
     const user = await this.prismaClientService.user.findUnique({
       where: { id },
-      include: { creditCards: true },
+      include: { creditCards: true, phone: true },
     });
 
     if (!user) {
@@ -68,7 +68,7 @@ export class UsersService {
           ? new Date(updateUserDto.birthDate)
           : undefined,
       },
-      include: { creditCards: true },
+      include: { creditCards: true, phone: true },
     });
   }
 
