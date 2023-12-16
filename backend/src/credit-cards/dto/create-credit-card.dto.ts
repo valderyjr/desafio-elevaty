@@ -29,6 +29,7 @@ export class CreateCreditCardDto {
   @IsCreditCard()
   number: string;
 
+  // @TODO: Preciso lidar com isso aqui ainda
   @IsString()
   @IsOptional()
   invoiceUrl?: string;

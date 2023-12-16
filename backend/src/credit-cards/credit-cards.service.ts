@@ -26,6 +26,7 @@ export class CreditCardsService {
         HttpStatus.NOT_FOUND,
       );
     }
+
     return creditCard;
   }
 

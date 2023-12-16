@@ -4,6 +4,7 @@ import { SharedModule } from './shared/shared.module';
 import { UsersModule } from './users/users.module';
 import { CreditCardsModule } from './credit-cards/credit-cards.module';
 import { PhonesModule } from './phones/phones.module';
+import { AddressesModule } from './addresses/addresses.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { PhonesModule } from './phones/phones.module';
     UsersModule,
     CreditCardsModule,
     PhonesModule,
+    AddressesModule,
   ],
   controllers: [],
   providers: [],
