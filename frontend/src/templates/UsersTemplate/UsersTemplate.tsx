@@ -1,12 +1,14 @@
 "use client";
 
 import { useQuery } from "react-query";
-import { User } from "../../services/users/getUser";
-import { getUsers } from "../../services/users/getUsers";
-import { Button } from "../Button/Button";
-import { Table, TableColumn } from "../Table/Table";
+import { Button } from "../../components/Button/Button";
+import { Table, TableColumn } from "../../components/Table/Table";
 import { formatStringDate } from "../../utils/date";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { CreateOrEditUserModal } from "../../components/CreateOrEditUserModal/CreateOrEditUserModal";
+import { REACT_QUERY_KEYS } from "../../utils/constants";
+import { User, getUsers } from "../../services/users";
 
 const renderName = (user: User) => (
   <p
@@ -29,8 +31,10 @@ const renderBirthDate = (user: User) => {
 };
 
 export const UsersTemplate = () => {
-  const { data, isLoading } = useQuery<User[]>({
-    queryKey: ["users"],
+  const [isOpen, setIsOpen] = useState(false);
+
+  const { data, isLoading } = useQuery({
+    queryKey: [REACT_QUERY_KEYS.getUsers],
     queryFn: getUsers,
   });
 
@@ -50,15 +54,18 @@ export const UsersTemplate = () => {
   ];
 
   return (
-    <div className="w-full flex flex-col gap-2">
-      <div className="flex gap-2 justify-between w-full items-center">
-        <h1 className="text-xl font-semibold">Clientes</h1>
-        <Button>
-          <PlusCircleIcon className="h-5 w-5 stroke-2" />
-          <span>Criar</span>
-        </Button>
+    <>
+      <div className="w-full flex flex-col gap-3">
+        <div className="flex gap-2 justify-between w-full items-center">
+          <h1 className="text-xl font-semibold">Clientes</h1>
+          <Button onClick={() => setIsOpen((prev) => !prev)}>
+            <PlusCircleIcon className="h-5 w-5 stroke-2" />
+            <span>Criar</span>
+          </Button>
+        </div>
+        <Table columns={columns} data={data ?? []} isLoading={isLoading} />
       </div>
-      <Table columns={columns} data={data ?? []} isLoading={isLoading} />
-    </div>
+      <CreateOrEditUserModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+    </>
   );
 };
