@@ -26,7 +26,7 @@ export const Table = <T,>({ columns, data, isLoading }: TableProps<T>) => {
           <tr>
             {columns.map((item) => (
               <th
-                className="px-4 py-3 text-left"
+                className="px-4 py-3 text-left whitespace-nowrap"
                 key={`table-header-item-${String(item.property)}`}
               >
                 {item.title}

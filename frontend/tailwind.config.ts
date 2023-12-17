@@ -8,6 +8,12 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      colors: {
+        brand: {
+          primary: "#FEA300",
+          secondary: "#272f3a",
+        },
+      },
       keyframes: {
         skeleton: {
           "100%": { transform: "translateX(100%)" },

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Header } from "../components/Header/Header";
+import { ReactQueryProvider } from "../providers/ReactQueryProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,10 +18,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // @TODO Title de cada página derivando desse
   return (
-    <html lang="pt-BR">
-      <body className={inter.className}>{children}</body>
+    <html lang="pt-BR" className="w-full h-full text-brand-secondary">
+      <body className={`${inter.className} w-full h-full flex flex-col`}>
+        <Header />
+        <main className="p-4 max-w-7xl mx-auto h-full w-full">
+          <ReactQueryProvider>{children}</ReactQueryProvider>
+        </main>
+      </body>
     </html>
   );
 }
