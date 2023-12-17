@@ -14,14 +14,14 @@ export type ButtonProps = {
   loading?: boolean;
 };
 
-export function Button({
+export const Button = ({
   children,
   onClick,
   size = "md",
   variant = "primary",
   type = "button",
   loading,
-}: PropsWithChildren<ButtonProps>) {
+}: PropsWithChildren<ButtonProps>) => {
   const classNameBySize: { [key in ButtonSizes]: string } = {
     sm: "px-3 py-2",
     md: "px-4 py-3",
@@ -57,4 +57,4 @@ export function Button({
       )}
     </button>
   );
-}
+};

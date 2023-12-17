@@ -9,14 +9,14 @@ export type InputProps = {
   disabled?: boolean;
 };
 
-export function Input({
+export const Input = ({
   label,
   isRequired,
   inputProps,
   id,
   error,
   disabled,
-}: InputProps) {
+}: InputProps) => {
   return (
     <div className="flex flex-col gap-1 w-full">
       <label
@@ -39,4 +39,4 @@ export function Input({
       {error && <p className="text-sm font-normal text-red-600">{error}</p>}
     </div>
   );
-}
+};

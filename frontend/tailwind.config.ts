@@ -6,7 +6,15 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  theme: {},
+  theme: {
+    extend: {
+      keyframes: {
+        skeleton: {
+          "100%": { transform: "translateX(100%)" },
+        },
+      },
+    },
+  },
   plugins: [],
 };
 export default config;
