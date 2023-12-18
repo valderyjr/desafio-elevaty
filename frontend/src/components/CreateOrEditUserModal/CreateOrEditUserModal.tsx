@@ -8,18 +8,24 @@ import { getUser } from "../../services/users";
 import { useEffect } from "react";
 import { formatStringDateToInput } from "../../utils/date";
 
-type CreateOrEditUserModalProps = { id?: string } & Omit<ModalProps, "title">;
+type CreateOrEditUserModalProps = {
+  id?: string;
+  refetchUsers: () => void;
+} & Omit<ModalProps, "title">;
 
 export const CreateOrEditUserModal = ({
   isOpen,
   onClose,
   id,
+  refetchUsers,
 }: CreateOrEditUserModalProps) => {
   const { data, isLoading: isLoadingUser } = useQuery({
     queryKey: [REACT_QUERY_KEYS.getUser, id],
     enabled: !!id,
     queryFn: () => getUser(id ?? ""),
   });
+
+  // @TODO: REFETCH APÓS CRIAR, EDITAR, E DELETAR
 
   const action = id ? "Editar" : "Criar";
 
@@ -39,7 +45,11 @@ export const CreateOrEditUserModal = ({
       reset,
       formState: { errors },
     },
-  } = useCreateOrEditUserForm({ onCloseModal: handleClose, id });
+  } = useCreateOrEditUserForm({
+    onCloseModal: handleClose,
+    id,
+    onSuccess: refetchUsers,
+  });
 
   useEffect(() => {
     if (!data || !isOpen) {

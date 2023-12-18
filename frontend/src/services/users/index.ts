@@ -1,21 +1,5 @@
 import { fetchWrapper } from "../../utils/fetchWrapper";
-
-export type User = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  birthDate: string;
-  // creditCards: CreditCard[];
-  // phone: Phone | null;
-  // address: Address | null;
-};
-
-export type PaginatedResponse<T> = {
-  data: T[];
-  total: number;
-  pages: number;
-};
+import { PaginatedResponse, User } from "../../utils/types";
 
 export const getUsers = async (take: number, skip: number) => {
   return await fetchWrapper<PaginatedResponse<User>>(

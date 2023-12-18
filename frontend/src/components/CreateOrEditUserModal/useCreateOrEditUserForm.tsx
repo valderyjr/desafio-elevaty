@@ -9,17 +9,19 @@ import {
 } from "../../utils/constants";
 import { parseInputStringToDate } from "../../utils/date";
 import {
-  User,
   createUser as createUserMutation,
   updateUser as updateUserMutation,
 } from "../../services/users";
+import { UpdateUserMutation } from "../../utils/types";
 
 interface useCreateOrEditUserFormProps {
   onCloseModal: () => void;
+  onSuccess: () => void;
   id?: string;
 }
 
 export const useCreateOrEditUserForm = ({
+  onSuccess,
   onCloseModal,
   id,
 }: useCreateOrEditUserFormProps) => {
@@ -72,23 +74,29 @@ export const useCreateOrEditUserForm = ({
     });
 
   const { mutate: updateUserMutate, isLoading: isLoadingUpdateUser } =
-    useMutation<User, unknown, Partial<Omit<User, "id">>>({
+    useMutation({
       mutationKey: [REACT_QUERY_KEYS.updateUser],
-      mutationFn: (user) => updateUserMutation(id ?? "", user),
+      mutationFn: ({ id, user }: UpdateUserMutation) =>
+        updateUserMutation(id, user),
     });
 
   const updateUser = async (data: UserFormData) => {
-    updateUserMutate(data, {
-      onSuccess: () => {
-        onCloseModal();
-      },
-      onError: (e) => console.log(e),
-    });
+    updateUserMutate(
+      { id: id ?? "", user: data },
+      {
+        onSuccess: () => {
+          onSuccess();
+          onCloseModal();
+        },
+        onError: (e) => console.log(e),
+      }
+    );
   };
 
   const createUser = async (data: UserFormData) => {
     createUserMutate(data, {
       onSuccess: () => {
+        onSuccess();
         onCloseModal();
       },
       onError: (e) => console.log(e),

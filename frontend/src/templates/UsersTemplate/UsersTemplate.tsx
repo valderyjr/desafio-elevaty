@@ -9,12 +9,13 @@ import { useState } from "react";
 import { CreateOrEditUserModal } from "../../components/CreateOrEditUserModal/CreateOrEditUserModal";
 import { REACT_QUERY_KEYS, TAKE } from "../../utils/constants";
 import {
-  User,
   deleteUser as deleteUserMutation,
   getUsers,
 } from "../../services/users";
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { Pagination } from "../../components/Pagination/Pagination";
+import { User } from "../../utils/types";
+import Link from "next/link";
 
 const renderName = (user: User) => (
   <p
@@ -87,6 +88,12 @@ export const UsersTemplate = () => {
         >
           <TrashIcon className="w-4 h-4" />
         </Button>
+        <Link
+          href={`/${item.id}`}
+          className="font-semibold text-sm leading-4 hover:underline"
+        >
+          Ver detalhes
+        </Link>
       </div>
     );
   };
@@ -134,6 +141,7 @@ export const UsersTemplate = () => {
         />
       </div>
       <CreateOrEditUserModal
+        refetchUsers={refetchUsers}
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         id={userIdToEdit}
