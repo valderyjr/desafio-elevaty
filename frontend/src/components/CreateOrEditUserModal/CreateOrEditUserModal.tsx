@@ -15,16 +15,10 @@ export const CreateOrEditUserModal = ({
   onClose,
   id,
 }: CreateOrEditUserModalProps) => {
-  const {
-    data,
-    error,
-    isLoading: isLoadingUser,
-  } = useQuery({
-    queryKey: [REACT_QUERY_KEYS.getUser],
+  const { data, isLoading: isLoadingUser } = useQuery({
+    queryKey: [REACT_QUERY_KEYS.getUser, id],
     enabled: !!id,
-    queryFn: () => {
-      return getUser(id ?? "");
-    },
+    queryFn: () => getUser(id ?? ""),
   });
 
   const action = id ? "Editar" : "Criar";
@@ -32,7 +26,7 @@ export const CreateOrEditUserModal = ({
   const handleClose = () => {
     onClose();
     clearErrors();
-    reset();
+    reset({ birthDate: "", email: "", firstName: "", lastName: "" });
   };
 
   const {
@@ -48,7 +42,7 @@ export const CreateOrEditUserModal = ({
   } = useCreateOrEditUserForm({ onCloseModal: handleClose, id });
 
   useEffect(() => {
-    if (!data) {
+    if (!data || !isOpen) {
       return;
     }
 
@@ -60,7 +54,7 @@ export const CreateOrEditUserModal = ({
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  }, [data, isOpen]);
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={`${action} cliente`}>

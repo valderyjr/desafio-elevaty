@@ -60,6 +60,8 @@ export class UsersService {
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     await this.findOne(id);
 
+    // @TODO: verify if email belongs to another user
+
     return await this.prismaClientService.user.update({
       where: { id },
       data: {

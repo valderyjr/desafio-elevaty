@@ -12,6 +12,7 @@ export type ButtonProps = {
   size?: ButtonSizes;
   variant?: ButtonVariants;
   loading?: boolean;
+  title?: string;
 };
 
 export const Button = ({
@@ -20,6 +21,7 @@ export const Button = ({
   size = "md",
   variant = "primary",
   type = "button",
+  title,
   loading,
 }: PropsWithChildren<ButtonProps>) => {
   const classNameBySize: { [key in ButtonSizes]: string } = {
@@ -46,6 +48,7 @@ export const Button = ({
       className={`transition-colors ease-linear duration-200 font-semibold rounded flex gap-1 items-center justify-center ${
         classNameByVariant[variant]
       } ${classNameBySize[size]} ${loading ? "pointer-events-none" : ""}`}
+      title={title}
     >
       {loading ? (
         <div
