@@ -17,3 +17,9 @@ export const INPUT_ERROR_MESSAGES = {
   email: "Digite um email válido.",
   datePreviousToday: "A data selecionada precisa ser anterior a hoje.",
 };
+
+export const TAKE = 2;
+
+export const MIN_PAGE_TO_BREAKPOINT = 5;
+export const DYNAMIC_PAGES_LENGTH = 3;
+export const DYNAMIC_PAGES_LENGTH_2 = 4;

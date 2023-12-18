@@ -13,6 +13,7 @@ export type ButtonProps = {
   variant?: ButtonVariants;
   loading?: boolean;
   title?: string;
+  disabled?: boolean;
 };
 
 export const Button = ({
@@ -23,6 +24,7 @@ export const Button = ({
   type = "button",
   title,
   loading,
+  disabled,
 }: PropsWithChildren<ButtonProps>) => {
   const classNameBySize: { [key in ButtonSizes]: string } = {
     sm: "px-4 py-1",
@@ -45,9 +47,12 @@ export const Button = ({
     <button
       onClick={onClick}
       type={type}
+      disabled={disabled}
       className={`transition-colors ease-linear duration-200 font-semibold rounded flex gap-1 items-center justify-center ${
         classNameByVariant[variant]
-      } ${classNameBySize[size]} ${loading ? "pointer-events-none" : ""}`}
+      } ${classNameBySize[size]} ${
+        loading || disabled ? "pointer-events-none" : ""
+      } disabled:bg-gray-500   disabled:outline-gray-500 disabled:opacity-50`}
       title={title}
     >
       {loading ? (

@@ -8,11 +8,14 @@ import {
   Delete,
   HttpStatus,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { PaginationDto } from 'src/shared/dto/pagination.dto';
+import { PaginatedEntity } from 'src/shared/entites/paginated.entity';
 
 @Controller('users')
 export class UsersController {
@@ -24,8 +27,13 @@ export class UsersController {
   }
 
   @Get()
-  async findAll(): Promise<User[]> {
-    return await this.usersService.findAll();
+  async findAll(
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginatedEntity<User>> {
+    return await this.usersService.findAll(
+      paginationDto.take,
+      paginationDto.skip,
+    );
   }
 
   @Get(':id')

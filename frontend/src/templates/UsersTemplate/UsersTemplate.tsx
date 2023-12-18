@@ -7,13 +7,14 @@ import { formatStringDate } from "../../utils/date";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { CreateOrEditUserModal } from "../../components/CreateOrEditUserModal/CreateOrEditUserModal";
-import { REACT_QUERY_KEYS } from "../../utils/constants";
+import { REACT_QUERY_KEYS, TAKE } from "../../utils/constants";
 import {
   User,
   deleteUser as deleteUserMutation,
   getUsers,
 } from "../../services/users";
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
+import { Pagination } from "../../components/Pagination/Pagination";
 
 const renderName = (user: User) => (
   <p
@@ -38,14 +39,15 @@ const renderBirthDate = (user: User) => {
 export const UsersTemplate = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [userIdToEdit, setUserIdToEdit] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
 
   const {
     data,
     isLoading,
     refetch: refetchUsers,
   } = useQuery({
-    queryKey: [REACT_QUERY_KEYS.getUsers],
-    queryFn: getUsers,
+    queryKey: [REACT_QUERY_KEYS.getUsers, currentPage],
+    queryFn: () => getUsers(TAKE, currentPage * TAKE),
   });
 
   const { mutate: deleteUser, isLoading: isLoadingDeleteUser } = useMutation({
@@ -114,7 +116,22 @@ export const UsersTemplate = () => {
             <span>Criar</span>
           </Button>
         </div>
-        <Table columns={columns} data={data ?? []} isLoading={isLoading} />
+        <Table
+          columns={columns}
+          data={data?.data ?? []}
+          isLoading={isLoading}
+        />
+        <Pagination
+          currentPage={currentPage}
+          take={TAKE}
+          totalPages={data?.pages ?? 0}
+          totalResults={data?.total ?? 0}
+          actions={{
+            onClickNext: () => setCurrentPage((curr) => curr + 1),
+            onClickPage: setCurrentPage,
+            onClickPrevious: () => setCurrentPage((curr) => curr - 1),
+          }}
+        />
       </div>
       <CreateOrEditUserModal
         isOpen={isOpen}

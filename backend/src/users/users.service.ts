@@ -4,16 +4,18 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaClientService } from 'src/shared/prisma/prisma-client.service';
 import { User } from './entities/user.entity';
 import { ERROR_MESSAGES_ENUM } from 'src/shared/errors-messages/errors';
+import { PaginatedEntity } from 'src/shared/entites/paginated.entity';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prismaClientService: PrismaClientService) {}
 
-  private async findUserByEmail(email: string): Promise<User | null> {
-    return await this.prismaClientService.user.findUnique({
+  private async findUserByEmail(email: string): Promise<boolean> {
+    const user = await this.prismaClientService.user.findUnique({
       where: { email },
-      include: { creditCards: true, phone: true, address: true },
     });
+
+    return Boolean(user);
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -35,10 +37,22 @@ export class UsersService {
     });
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.prismaClientService.user.findMany({
-      include: { creditCards: true, phone: true, address: true },
-    });
+  async findAll(take: number, skip: number): Promise<PaginatedEntity<User>> {
+    const [data, total] = await this.prismaClientService.$transaction([
+      this.prismaClientService.user.findMany({
+        skip,
+        take,
+        include: { creditCards: true, phone: true, address: true },
+        orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
+      }),
+      this.prismaClientService.user.count(),
+    ]);
+
+    return {
+      data,
+      total,
+      pages: Math.ceil(total / take),
+    };
   }
 
   async findOne(id: string): Promise<User> {
@@ -60,7 +74,24 @@ export class UsersService {
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     await this.findOne(id);
 
-    // @TODO: verify if email belongs to another user
+    const hasOtherUserWithEmail =
+      await this.prismaClientService.user.findUnique({
+        where: {
+          email: updateUserDto.email,
+          AND: {
+            id: {
+              not: id,
+            },
+          },
+        },
+      });
+
+    if (hasOtherUserWithEmail) {
+      throw new HttpException(
+        ERROR_MESSAGES_ENUM.USER_ALREADY_EXISTS,
+        HttpStatus.CONFLICT,
+      );
+    }
 
     return await this.prismaClientService.user.update({
       where: { id },

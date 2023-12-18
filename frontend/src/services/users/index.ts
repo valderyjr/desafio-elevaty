@@ -11,8 +11,16 @@ export type User = {
   // address: Address | null;
 };
 
-export const getUsers = async () => {
-  return await fetchWrapper<User[]>(`/users/`);
+export type PaginatedResponse<T> = {
+  data: T[];
+  total: number;
+  pages: number;
+};
+
+export const getUsers = async (take: number, skip: number) => {
+  return await fetchWrapper<PaginatedResponse<User>>(
+    `/users?take=${take}&skip=${skip}`
+  );
 };
 
 export const getUser = async (id: string) => {
