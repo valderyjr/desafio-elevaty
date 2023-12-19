@@ -3,6 +3,15 @@ export type ClientApiError = {
   message: string;
 };
 
+export type ZipCodeApiResponse = {
+  cep: string;
+  logradouro: string;
+  complemento: string;
+  bairro: string;
+  localidade: string;
+  uf: string;
+};
+
 export type PaginatedResponse<T> = {
   data: T[];
   total: number;
@@ -16,6 +25,18 @@ export type Phone = {
   number: string;
 };
 
+export type Address = {
+  id: string;
+  userId: string;
+  zipCode: string;
+  state: string;
+  city: string;
+  street: string;
+  number: string;
+  neighborhood: string;
+  complement?: string | null;
+};
+
 export type User = {
   id: string;
   firstName: string;
@@ -23,8 +44,8 @@ export type User = {
   email: string;
   birthDate: string;
   phone?: Phone | null;
+  address?: Address | null;
   // creditCards: CreditCard[];
-  // address: Address | null;
 };
 
 export type UpdateMutation<T> = {

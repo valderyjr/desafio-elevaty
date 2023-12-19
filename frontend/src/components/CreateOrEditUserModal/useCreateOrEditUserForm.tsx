@@ -7,6 +7,7 @@ import {
   INPUT_ERROR_MESSAGES,
   INPUT_LENGTHS,
   REACT_QUERY_KEYS,
+  STATES,
 } from "../../utils/constants";
 import { parseInputStringToDate } from "../../utils/date";
 import {
@@ -17,23 +18,31 @@ import {
   createPhone as createPhoneMutation,
   updatePhone as updatePhoneMutation,
 } from "../../services/phones";
-import { Phone, UpdateMutation, User } from "../../utils/types";
-import { ChangeEvent, FocusEvent } from "react";
+import {
+  createAddress as createAddressMutation,
+  updateAddress as updateAddressMutation,
+} from "../../services/address";
+import { Address, Phone, UpdateMutation, User } from "../../utils/types";
+import { ChangeEvent, useState } from "react";
 import {
   AsYouType,
   CountryCode,
   parsePhoneNumberWithError,
 } from "libphonenumber-js";
+import { fetchZipCode } from "../../services/zipCode";
+import { formatZipCode } from "../../utils/string";
 
 interface useCreateOrEditUserFormProps {
   onCloseModal: () => void;
   onSuccess: () => void;
+  onSearchZipCode: () => void;
   id?: string;
 }
 
 export const useCreateOrEditUserForm = ({
   onSuccess,
   onCloseModal,
+  onSearchZipCode,
   id,
 }: useCreateOrEditUserFormProps) => {
   const userSchema = z.object({
@@ -69,10 +78,40 @@ export const useCreateOrEditUserForm = ({
         .min(INPUT_LENGTHS.required, INPUT_ERROR_MESSAGES.required),
       label: z.string(),
     }),
-    number: z
+    phoneNumber: z
       .string()
       .min(INPUT_LENGTHS.required, INPUT_ERROR_MESSAGES.required)
       .max(INPUT_LENGTHS.phoneNumber, INPUT_ERROR_MESSAGES.maxLength),
+    addressId: z.string().optional(),
+    zipCode: z
+      .string()
+      .length(INPUT_LENGTHS.zipCode, INPUT_ERROR_MESSAGES.invalidZipCode),
+    state: z.object({
+      label: z.string(),
+      value: z.string().length(INPUT_LENGTHS.state, {
+        message: INPUT_ERROR_MESSAGES.required,
+      }),
+    }),
+    city: z
+      .string()
+      .min(INPUT_LENGTHS.required, INPUT_ERROR_MESSAGES.required)
+      .max(INPUT_LENGTHS.defaultString, INPUT_ERROR_MESSAGES.maxLength),
+    street: z
+      .string()
+      .min(INPUT_LENGTHS.required, INPUT_ERROR_MESSAGES.required)
+      .max(INPUT_LENGTHS.defaultString, INPUT_ERROR_MESSAGES.maxLength),
+    number: z
+      .string()
+      .min(INPUT_LENGTHS.required, INPUT_ERROR_MESSAGES.required)
+      .max(INPUT_LENGTHS.defaultString, INPUT_ERROR_MESSAGES.maxLength),
+    neighborhood: z
+      .string()
+      .min(INPUT_LENGTHS.required, INPUT_ERROR_MESSAGES.required)
+      .max(INPUT_LENGTHS.defaultString, INPUT_ERROR_MESSAGES.maxLength),
+    complement: z
+      .string()
+      .max(INPUT_LENGTHS.defaultString, INPUT_ERROR_MESSAGES.maxLength)
+      .optional(),
   });
 
   type UserFormData = z.infer<typeof userSchema>;
@@ -86,6 +125,7 @@ export const useCreateOrEditUserForm = ({
     reset,
     setError,
     getValues,
+    setValue,
   } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     mode: "onBlur",
@@ -95,11 +135,15 @@ export const useCreateOrEditUserForm = ({
       email: "",
       birthDate: "",
       phoneId: "",
-      countryCode: {
-        value: DEFAULT_PHONE_COUNTRY_CODE.value,
-        label: DEFAULT_PHONE_COUNTRY_CODE.label,
-      },
+      countryCode: DEFAULT_PHONE_COUNTRY_CODE,
+      phoneNumber: "",
+      city: "",
+      complement: "",
+      neighborhood: "",
       number: "",
+      state: STATES.at(0),
+      street: "",
+      zipCode: "",
     },
   });
 
@@ -129,6 +173,61 @@ export const useCreateOrEditUserForm = ({
         updatePhoneMutation(id, data),
     });
 
+  const {
+    mutateAsync: createAddressMutate,
+    isLoading: isLoadingCreateAddress,
+  } = useMutation({
+    mutationKey: [REACT_QUERY_KEYS.createAddress],
+    mutationFn: createAddressMutation,
+  });
+
+  const {
+    mutateAsync: updateAddressMutate,
+    isLoading: isLoadingUpdateAddress,
+  } = useMutation({
+    mutationKey: [REACT_QUERY_KEYS.updateAddress],
+    mutationFn: ({ id, data }: UpdateMutation<Address>) =>
+      updateAddressMutation(id, data),
+  });
+
+  const handleOnChangeZipCode = async (e: ChangeEvent<HTMLInputElement>) => {
+    const formattedZipCode = formatZipCode(e.target.value);
+
+    const validationOptions = {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: false,
+    };
+
+    setValue("zipCode", formattedZipCode, validationOptions);
+
+    if (formattedZipCode.length < INPUT_LENGTHS.zipCode) {
+      return;
+    }
+
+    const [data, error] = await fetchZipCode(formattedZipCode);
+
+    onSearchZipCode();
+
+    if (error) {
+      console.error("Deu ruim no seu cep!");
+      return;
+    }
+
+    setValue("city", data.localidade, validationOptions);
+    setValue("street", data.logradouro, validationOptions);
+    setValue("neighborhood", data.bairro, validationOptions);
+    setValue("complement", data.complemento, validationOptions);
+
+    const stateOption = STATES.find((state) => state.value === data.uf);
+
+    if (!stateOption) {
+      return;
+    }
+
+    setValue("state", stateOption, validationOptions);
+  };
+
   const parsePhone = async (phoneNumber: string, countryCode: CountryCode) => {
     try {
       const hasError = await parsePhoneNumberWithError(
@@ -150,7 +249,7 @@ export const useCreateOrEditUserForm = ({
 
   const handleOnChangePhone = async (e: ChangeEvent<HTMLInputElement>) => {
     const countryCode = getValues("countryCode.value");
-    const currentValue = getValues("number");
+    const currentValue = getValues("phoneNumber");
     const value = e.target.value;
 
     const { phone } = await parsePhone(value, countryCode as CountryCode);
@@ -164,12 +263,12 @@ export const useCreateOrEditUserForm = ({
 
   const validatePhone = async (value: string) => {
     if (value.length < INPUT_LENGTHS.required) {
-      setError("number", { message: INPUT_ERROR_MESSAGES.required });
+      setError("phoneNumber", { message: INPUT_ERROR_MESSAGES.required });
       return true;
     }
 
     if (value.length > INPUT_LENGTHS.phoneNumber) {
-      setError("number", { message: INPUT_ERROR_MESSAGES.maxLength });
+      setError("phoneNumber", { message: INPUT_ERROR_MESSAGES.maxLength });
       return true;
     }
 
@@ -178,18 +277,18 @@ export const useCreateOrEditUserForm = ({
     const { error } = await parsePhone(value, countryCode as CountryCode);
 
     if (error) {
-      setError("number", { message: INPUT_ERROR_MESSAGES.invalidPhone });
+      setError("phoneNumber", { message: INPUT_ERROR_MESSAGES.invalidPhone });
       return true;
     }
 
-    clearErrors("number");
+    clearErrors("phoneNumber");
     return false;
   };
 
   const handlePhoneMutation = async (userId: string, data: UserFormData) => {
     const formattedData = {
       countryCode: data.countryCode.value,
-      number: data.number,
+      number: data.phoneNumber,
     };
 
     if (data.phoneId) {
@@ -199,6 +298,30 @@ export const useCreateOrEditUserForm = ({
       });
     } else {
       await createPhoneMutate({
+        ...formattedData,
+        userId,
+      });
+    }
+  };
+
+  const handleAddressMutation = async (userId: string, data: UserFormData) => {
+    const formattedData = {
+      city: data.city,
+      neighborhood: data.neighborhood,
+      number: data.number,
+      state: data.state.value,
+      street: data.street,
+      zipCode: data.zipCode,
+      complement: data.complement,
+    };
+
+    if (data.addressId) {
+      await updateAddressMutate({
+        id: data.addressId,
+        data: formattedData,
+      });
+    } else {
+      await createAddressMutate({
         ...formattedData,
         userId,
       });
@@ -218,6 +341,7 @@ export const useCreateOrEditUserForm = ({
     }
 
     await handlePhoneMutation(createdUser.id, data);
+    await handleAddressMutation(createdUser.id, data);
   };
 
   const handleUpdateUser = async (id: string, data: UserFormData) => {
@@ -232,11 +356,12 @@ export const useCreateOrEditUserForm = ({
     });
 
     await handlePhoneMutation(id, data);
+    await handleAddressMutation(id, data);
   };
 
   const onSubmit = async (data: UserFormData) => {
     try {
-      const errorInPhone = await validatePhone(data.number);
+      const errorInPhone = await validatePhone(data.phoneNumber);
 
       if (errorInPhone) {
         return;
@@ -250,7 +375,7 @@ export const useCreateOrEditUserForm = ({
       onSuccess();
       onCloseModal();
     } catch (error) {
-      console.error(error);
+      console.error("oi", error);
     }
   };
 
@@ -263,6 +388,7 @@ export const useCreateOrEditUserForm = ({
       clearErrors,
       reset,
     },
+    handleOnChangeZipCode,
     handleOnChangePhone,
     validatePhone,
     onSubmit,
@@ -270,6 +396,8 @@ export const useCreateOrEditUserForm = ({
       isLoadingCreateUser ||
       isLoadingUpdateUser ||
       isLoadingCreatePhone ||
-      isLoadingUpdatePhone,
+      isLoadingUpdatePhone ||
+      isLoadingCreateAddress ||
+      isLoadingUpdateAddress,
   };
 };

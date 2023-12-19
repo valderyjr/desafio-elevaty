@@ -15,7 +15,7 @@ export class CreateAddressDto {
   state: string;
 
   @IsString()
-  @Length(8, 8)
+  @Length(9, 9)
   zipCode: string;
 
   @IsString()
@@ -36,6 +36,6 @@ export class CreateAddressDto {
 
   @IsOptional()
   @IsString()
-  @Length(1, 255)
+  @Length(0, 255)
   complement?: string | null;
 }

@@ -36,7 +36,7 @@ model Phone {
 
 model Address {
   id           String  @id @default(uuid())
-  zipCode      String  @db.Char(8)
+  zipCode      String  @db.Char(9)
   state        String  @db.Char(2)
   city         String  @db.VarChar(255)
   street       String  @db.VarChar(255)

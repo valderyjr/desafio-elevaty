@@ -6,9 +6,10 @@ import { useCreateOrEditUserForm } from "./useCreateOrEditUserForm";
 import {
   DEFAULT_PHONE_COUNTRY_CODE,
   REACT_QUERY_KEYS,
+  STATES,
 } from "../../utils/constants";
 import { getUser } from "../../services/users";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { formatStringDateToInput } from "../../utils/date";
 import { Select } from "../Select/Select";
 import { Controller } from "react-hook-form";
@@ -29,6 +30,8 @@ export const CreateOrEditUserModal = ({
   id,
   refetchUsers,
 }: CreateOrEditUserModalProps) => {
+  const [hasSearchedZipCode, setHasSearchedZipCode] = useState(false);
+
   const {
     data,
     isLoading: isLoadingUser,
@@ -49,10 +52,19 @@ export const CreateOrEditUserModal = ({
       email: "",
       firstName: "",
       lastName: "",
-      countryCode: { label: "BR", value: "BR" },
-      number: "",
+      countryCode: DEFAULT_PHONE_COUNTRY_CODE,
+      phoneNumber: "",
       phoneId: "",
+      city: "",
+      complement: "",
+      neighborhood: "",
+      number: "",
+      state: STATES.at(0),
+      street: "",
+      zipCode: "",
+      addressId: "",
     });
+    setHasSearchedZipCode(false);
   };
 
   const handleSuccess = () => {
@@ -68,6 +80,7 @@ export const CreateOrEditUserModal = ({
     onSubmit,
     validatePhone,
     handleOnChangePhone,
+    handleOnChangeZipCode,
     hookForm: {
       control,
       handleSubmit,
@@ -80,6 +93,7 @@ export const CreateOrEditUserModal = ({
     onCloseModal: handleClose,
     id,
     onSuccess: handleSuccess,
+    onSearchZipCode: () => setHasSearchedZipCode(true),
   });
 
   useEffect(() => {
@@ -98,9 +112,26 @@ export const CreateOrEditUserModal = ({
           options.find((item) => item.value === data.phone?.countryCode)
             ?.label ?? DEFAULT_PHONE_COUNTRY_CODE.label,
       },
-      number: data.phone?.number ?? "",
+      phoneNumber: data.phone?.number ?? "",
       phoneId: data.phone?.id ?? "",
+      city: data.address?.city ?? "",
+      complement: data.address?.complement ?? "",
+      neighborhood: data.address?.neighborhood ?? "",
+      number: data.address?.number ?? "",
+      state: {
+        label:
+          STATES.find((state) => state.value === data.address?.state)?.label ??
+          STATES.at(0)?.label,
+        value:
+          STATES.find((state) => state.value === data.address?.state)?.value ??
+          STATES.at(0)?.value,
+      },
+      street: data.address?.street ?? "",
+      zipCode: data.address?.zipCode ?? "",
+      addressId: data.address?.id ?? "",
     });
+
+    setHasSearchedZipCode(Boolean(data.address?.zipCode));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isOpen]);
@@ -169,13 +200,13 @@ export const CreateOrEditUserModal = ({
           />
           <Controller
             control={control}
-            name="number"
+            name="phoneNumber"
             render={({ field: { onChange, ...rest } }) => (
               <Input
-                id="create-edit-user/number"
-                label="Número"
+                id="create-edit-user/phone-number"
+                label="Telefone"
                 disabled={isLoadingUser}
-                error={errors.number?.message}
+                error={errors.phoneNumber?.message}
                 inputProps={{
                   ...rest,
                   inputMode: "numeric",
@@ -192,6 +223,101 @@ export const CreateOrEditUserModal = ({
             )}
           />
         </div>
+        <div className="flex w-full gap-2">
+          <Controller
+            control={control}
+            name="zipCode"
+            render={({ field }) => (
+              <Input
+                id="create-edit-user/zip-code"
+                label="CEP"
+                disabled={isLoadingUser}
+                error={errors.zipCode?.message}
+                inputProps={{
+                  ...field,
+                  inputMode: "numeric",
+                  onChange: async (e) => {
+                    await handleOnChangeZipCode(e);
+                  },
+                }}
+                isRequired
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="state"
+            render={({ field: { name, onBlur, onChange, value } }) => (
+              <Select
+                id="create-edit-user/state"
+                label="Estado"
+                isRequired
+                formName={name}
+                onChange={onChange}
+                selected={value}
+                options={STATES}
+                placeholder="Selecione um estado"
+                disabled={isLoadingUser || !hasSearchedZipCode}
+                error={errors.state?.message || errors.state?.value?.message}
+                onBlur={onBlur}
+              />
+            )}
+          />
+        </div>
+        <div className="flex w-full gap-2">
+          <Input
+            id="create-edit-user/city"
+            label="Cidade"
+            disabled={isLoadingUser || !hasSearchedZipCode}
+            error={errors.city?.message}
+            inputProps={{
+              ...register("city"),
+            }}
+            isRequired
+          />
+          <Input
+            id="create-edit-user/neighborhood"
+            label="Bairro"
+            disabled={isLoadingUser || !hasSearchedZipCode}
+            error={errors.neighborhood?.message}
+            inputProps={{
+              ...register("neighborhood"),
+            }}
+            isRequired
+          />
+        </div>
+        <div className="flex w-full gap-2">
+          <Input
+            id="create-edit-user/street"
+            label="Logradouro"
+            disabled={isLoadingUser || !hasSearchedZipCode}
+            error={errors.street?.message}
+            inputProps={{
+              ...register("street"),
+            }}
+            isRequired
+          />
+          <Input
+            id="create-edit-user/number"
+            label="Número"
+            disabled={isLoadingUser || !hasSearchedZipCode}
+            error={errors.number?.message}
+            inputProps={{
+              ...register("number"),
+            }}
+            isRequired
+          />
+        </div>
+
+        <Input
+          id="create-edit-user/complement"
+          label="Complemento"
+          disabled={isLoadingUser || !hasSearchedZipCode}
+          error={errors.complement?.message}
+          inputProps={{
+            ...register("complement"),
+          }}
+        />
         <Button type="submit" loading={loadingMutation || isLoadingUser}>
           {action}
         </Button>
