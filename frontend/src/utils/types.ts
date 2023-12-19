@@ -9,18 +9,25 @@ export type PaginatedResponse<T> = {
   pages: number;
 };
 
+export type Phone = {
+  id: string;
+  userId: string;
+  countryCode: string;
+  number: string;
+};
+
 export type User = {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
   birthDate: string;
+  phone?: Phone | null;
   // creditCards: CreditCard[];
-  // phone: Phone | null;
   // address: Address | null;
 };
 
-export type UpdateUserMutation = {
+export type UpdateMutation<T> = {
   id: string;
-  user: Omit<User, "id">;
+  data: Omit<T, "id" | "userId">;
 };

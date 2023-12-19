@@ -3,9 +3,17 @@ import Link from "next/link";
 import { getUser } from "../../services/users";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import { formatStringDate } from "../../utils/date";
+import { User } from "../../utils/types";
 
 const handleGetUser = async (userId: string) =>
   await getUser(userId).catch(() => undefined);
+
+const getPhoneContent = (user: User) => {
+  if (!user.phone) {
+    return "Não informado.";
+  }
+  return `${user.phone.countryCode} ${user.phone.number}`;
+};
 
 export default async function UserPage({
   params: { userId },
@@ -21,7 +29,7 @@ export default async function UserPage({
   const personalInfos = [
     { title: "Email", content: user.email },
     { title: "Data de nascimento", content: formatStringDate(user.birthDate) },
-    { title: "Telefone", content: "telef" },
+    { title: "Telefone", content: getPhoneContent(user) },
     { title: "Endereço", content: "ender" },
   ];
 
