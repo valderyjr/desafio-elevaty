@@ -15,6 +15,10 @@ import { formatStringDateToInput } from "../../utils/date";
 import { Select } from "../Select/Select";
 import { Controller } from "react-hook-form";
 import { useToastStore } from "../../hooks/toastStore";
+import {
+  API_VALIDATION_ERRORS,
+  getFormattedApiError,
+} from "../../utils/apiErrors";
 
 type CreateOrEditUserModalProps = {
   id?: string;
@@ -38,13 +42,23 @@ export const CreateOrEditUserModal = ({
     queryKey: [REACT_QUERY_KEYS.getUser, id],
     enabled: !!id,
     queryFn: () => getUser(id ?? ""),
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error(error);
+      const formattedError = getFormattedApiError(error, "");
+
+      if (formattedError?.database) {
+        showToast({
+          color: "error",
+          children: formattedError.database,
+        });
+        return;
+      }
+
       showToast({
         color: "error",
         children:
           "Tivemos um erro interno ao buscar os dados deste usuário. Tente novamente mais tarde, por favor.",
       });
-      console.error(error);
     },
   });
 

@@ -19,6 +19,10 @@ import {
   parseExpirationValuesToInput,
 } from "../../utils/date";
 import { useToastStore } from "../../hooks/toastStore";
+import {
+  API_VALIDATION_ERRORS,
+  getFormattedApiError,
+} from "../../utils/apiErrors";
 
 type useCreditCardFormProps = {
   userId: string;
@@ -68,17 +72,24 @@ export const useCreditCardForm = ({
 
   type CreditCardFormData = z.infer<typeof creditCardSchema>;
 
-  const { register, handleSubmit, formState, control, clearErrors, reset } =
-    useForm<CreditCardFormData>({
-      resolver: zodResolver(creditCardSchema),
-      mode: "onBlur",
-      defaultValues: {
-        brand: "",
-        expiration: "",
-        id: "",
-        number: "",
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    formState,
+    control,
+    clearErrors,
+    reset,
+    setError,
+  } = useForm<CreditCardFormData>({
+    resolver: zodResolver(creditCardSchema),
+    mode: "onBlur",
+    defaultValues: {
+      brand: "",
+      expiration: "",
+      id: "",
+      number: "",
+    },
+  });
 
   const { showToast } = useToastStore();
 
@@ -137,13 +148,23 @@ export const useCreditCardForm = ({
         });
         onSuccess();
       },
-      onError: (error) => {
+      onError: (error: any) => {
+        console.error(error);
+
+        const formattedError = getFormattedApiError<"email">(error, "email");
+
+        if (formattedError?.database) {
+          showToast({
+            color: "error",
+            children: formattedError.database,
+          });
+          return;
+        }
         showToast({
           children:
             "Tivemos um erro interno. Tente novamente mais tarde, por favor.",
           color: "error",
         });
-        console.error(error);
       },
     });
   };
@@ -164,13 +185,23 @@ export const useCreditCardForm = ({
         const url = window.URL.createObjectURL(blob);
         window.open(url, "__blank");
       },
-      onError: (error) => {
+      onError: (error: any) => {
+        console.error(error);
+        const formattedError = getFormattedApiError(error, "");
+
+        if (formattedError?.database) {
+          showToast({
+            color: "error",
+            children: formattedError.database,
+          });
+          return;
+        }
+
         showToast({
           children:
             "Tivemos um erro interno. Tente novamente mais tarde, por favor.",
           color: "error",
         });
-        console.error(error);
       },
     });
   };
@@ -209,12 +240,41 @@ export const useCreditCardForm = ({
 
       reset({ brand: "", expiration: "", id: "", number: "" });
       onSuccess();
-    } catch (error) {
+    } catch (error: any) {
+      console.error(error);
+
+      const formattedError = getFormattedApiError<"expiration">(
+        error,
+        "expiration"
+      );
+
+      if (formattedError?.database) {
+        showToast({
+          color: "error",
+          children: formattedError.database,
+        });
+        return;
+      }
+
+      if (formattedError?.validation) {
+        const shouldUseExpirationField =
+          formattedError?.validation.message ===
+          API_VALIDATION_ERRORS["INVALID_CREDIT_CARD_EXPIRATION"];
+
+        setError(
+          shouldUseExpirationField ? formattedError.validation.field : "number",
+          {
+            message: formattedError.validation.message,
+          }
+        );
+
+        return;
+      }
+
       showToast({
         children: `Tivemos um erro interno. Tente novamente mais tarde, por favor.`,
         color: "error",
       });
-      console.error(error);
     }
   };
 

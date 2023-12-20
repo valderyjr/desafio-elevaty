@@ -22,18 +22,18 @@ export async function fetchWrapper<T = unknown>(
     return;
   }
 
+  if (!response.ok) {
+    const error = (await response.json()) as ClientApiError;
+    throw new Error(error.message);
+    return;
+  }
+
   if (isPdf) {
     const data = await response.blob();
     return data as T;
   }
 
   const data = await response.json();
-
-  if (!response.ok) {
-    const error = data as ClientApiError;
-    throw new Error(error.message);
-    return;
-  }
 
   return data as T;
 }

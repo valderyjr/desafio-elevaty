@@ -17,6 +17,7 @@ import { Pagination } from "../../components/Pagination/Pagination";
 import { User } from "../../utils/types";
 import Link from "next/link";
 import { useToastStore } from "../../hooks/toastStore";
+import { getFormattedApiError } from "../../utils/apiErrors";
 
 const renderName = (user: User) => (
   <p
@@ -76,12 +77,22 @@ export const UsersTemplate = () => {
     deleteUser(id, {
       onSuccess: () => refetchUsers(),
       onError: (error) => {
+        console.error(error);
+        const formattedError = getFormattedApiError(error, "");
+
+        if (formattedError?.database) {
+          showToast({
+            color: "error",
+            children: formattedError.database,
+          });
+          return;
+        }
+
         showToast({
           color: "error",
           children:
             "Tivemos um erro interno. Tente novamente mais tarde, por favor.",
         });
-        console.error(error);
       },
     });
   };

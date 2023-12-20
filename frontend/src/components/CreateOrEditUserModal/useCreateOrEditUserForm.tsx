@@ -32,6 +32,7 @@ import {
 import { fetchZipCode } from "../../services/zip-code";
 import { formatZipCode } from "../../utils/string";
 import { useToastStore } from "../../hooks/toastStore";
+import { getFormattedApiError } from "../../utils/apiErrors";
 
 interface useCreateOrEditUserFormProps {
   onCloseModal: () => void;
@@ -269,8 +270,8 @@ export const useCreateOrEditUserForm = ({
   };
 
   // @TODO: FOTOS E README
-  // @TODO: VALIDAÇÕES DE ERROS FORMATADOS
   // @TODO: DOCUMENTAÇÃO COM SWAGGER
+  // @TODO: COM O JOAO PARA TESTAR
 
   const validatePhone = async (value: string) => {
     if (value.length < INPUT_LENGTHS.required) {
@@ -390,13 +391,32 @@ export const useCreateOrEditUserForm = ({
       });
       onSuccess();
       onCloseModal();
-    } catch (error) {
+    } catch (error: any) {
+      console.error(error);
+
+      const formattedError = getFormattedApiError<"email">(error, "email");
+
+      if (formattedError?.database) {
+        showToast({
+          color: "error",
+          children: formattedError.database,
+        });
+        return;
+      }
+
+      if (formattedError?.validation) {
+        setError(formattedError.validation.field, {
+          message: formattedError.validation.message,
+        });
+
+        return;
+      }
+
       showToast({
         color: "error",
         children:
           "Tivemos um erro interno. Tente novamente mais tarde, por favor.",
       });
-      console.error(error);
     }
   };
 
