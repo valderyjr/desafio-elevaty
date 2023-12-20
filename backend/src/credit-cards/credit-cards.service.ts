@@ -18,6 +18,7 @@ import {
   getInvoiceFileName,
   pathToInvoicesFolder,
 } from 'src/shared/constants';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class CreditCardsService {
@@ -57,6 +58,7 @@ export class CreditCardsService {
     pdf: PDFKit.PDFDocument,
     fileName: string,
     creditCard: CreditCard,
+    user: User,
   ): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       // To determine when the PDF has finished being written successfully
@@ -79,8 +81,19 @@ export class CreditCardsService {
 
       pdf.pipe(writeStream);
 
-      pdf.text(creditCard.number);
-      pdf.text(creditCard.id);
+      pdf.text(`Fatura - ${user.firstName} ${user.lastName}`, {
+        align: 'center',
+      });
+
+      pdf.text(`Email: ${user.email}`);
+
+      pdf.text(`Número do cartão: ${creditCard.number}`);
+      pdf.text(`Bandeira do cartão: ${creditCard.brand}`);
+      pdf.text(
+        `Vencimento do cartão: ${String(
+          creditCard.expirationMonth + 1,
+        ).padStart(2, '0')}/${creditCard.expirationYear}`,
+      );
 
       pdf.end();
 
@@ -172,6 +185,8 @@ export class CreditCardsService {
   async getInvoiceById(id: string): Promise<StreamableFile> {
     const creditCard = await this.findOne(id);
 
+    const user = await this.usersService.findOne(creditCard.userId);
+
     const dirPath = path.join(__dirname, pathToInvoicesFolder);
     const fileName = getInvoiceFileName(creditCard.id);
     const filePath = `${dirPath}${fileName}`;
@@ -179,7 +194,7 @@ export class CreditCardsService {
     if (!creditCard.invoiceUrl) {
       const doc = new PDFDocument();
 
-      await this.savePdfToFile(doc, filePath, creditCard);
+      await this.savePdfToFile(doc, filePath, creditCard, user);
 
       await this.prismaClientService.creditCard.update({
         where: { id },

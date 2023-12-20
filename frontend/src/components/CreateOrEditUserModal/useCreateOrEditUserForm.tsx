@@ -268,11 +268,10 @@ export const useCreateOrEditUserForm = ({
     return { phone };
   };
 
-  // @TODO: MELHORAR TABELA
   // @TODO: FOTOS E README
-  // @TODO: DOCUMENTAÇÃO COM SWAGGER
   // @TODO: ERROS NAS QUERIES
   // @TODO: VALIDAÇÕES DE ERROS FORMATADOS
+  // @TODO: DOCUMENTAÇÃO COM SWAGGER
 
   const validatePhone = async (value: string) => {
     if (value.length < INPUT_LENGTHS.required) {
