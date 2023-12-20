@@ -18,6 +18,7 @@ import {
   getExpirationValuesFromInput,
   parseExpirationValuesToInput,
 } from "../../utils/date";
+import { useToastStore } from "../../hooks/toastStore";
 
 type useCreditCardFormProps = {
   userId: string;
@@ -79,6 +80,8 @@ export const useCreditCardForm = ({
       },
     });
 
+  const { showToast } = useToastStore();
+
   const {
     mutateAsync: createCreditCardMutate,
     isLoading: isLoadingCreateCreditCard,
@@ -127,8 +130,21 @@ export const useCreditCardForm = ({
 
   const onClickToDelete = (creditCardId: string) => {
     deleteCreditCardMutate(creditCardId, {
-      onSuccess: onSuccess,
-      onError: (e) => console.error("a", e),
+      onSuccess: () => {
+        showToast({
+          children: "Cartão excluído com sucesso..",
+          color: "success",
+        });
+        onSuccess();
+      },
+      onError: (error) => {
+        showToast({
+          children:
+            "Tivemos um erro interno. Tente novamente mais tarde, por favor.",
+          color: "error",
+        });
+        console.error(error);
+      },
     });
   };
 
@@ -136,14 +152,26 @@ export const useCreditCardForm = ({
     getCreditCardInvoiceMutate(creditCardId, {
       onSuccess: (blob) => {
         if (!blob) {
-          console.log("eita");
+          showToast({
+            children:
+              "Tivemos um erro interno. Tente novamente mais tarde, por favor.",
+            color: "error",
+          });
+
           return;
         }
 
         const url = window.URL.createObjectURL(blob);
         window.open(url, "__blank");
       },
-      onError: (e) => console.error("a", e),
+      onError: (error) => {
+        showToast({
+          children:
+            "Tivemos um erro interno. Tente novamente mais tarde, por favor.",
+          color: "error",
+        });
+        console.error(error);
+      },
     });
   };
 
@@ -171,10 +199,22 @@ export const useCreditCardForm = ({
       } else {
         await createCreditCardMutate({ ...formattedData, userId });
       }
+
+      showToast({
+        color: "success",
+        children: `Cartão de crédito ${
+          data.id ? "editado" : "criado"
+        } com sucesso.`,
+      });
+
       reset({ brand: "", expiration: "", id: "", number: "" });
       onSuccess();
     } catch (error) {
-      console.error("oi", error);
+      showToast({
+        children: `Tivemos um erro interno. Tente novamente mais tarde, por favor.`,
+        color: "error",
+      });
+      console.error(error);
     }
   };
 

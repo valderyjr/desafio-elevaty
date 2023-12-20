@@ -1,9 +1,16 @@
 "use client";
 import { useQuery } from "react-query";
 import { User } from "../../utils/types";
-import { REACT_QUERY_KEYS } from "../../utils/constants";
+import {
+  DIAL_CODES_BY_COUNTRY,
+  INPUT_LENGTHS,
+  REACT_QUERY_KEYS,
+} from "../../utils/constants";
 import { getUser } from "../../services/users";
-import { formatStringDate } from "../../utils/date";
+import {
+  formatStringDate,
+  parseExpirationValuesToInput,
+} from "../../utils/date";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { Button } from "../../components/Button/Button";
@@ -13,6 +20,7 @@ import { CreditCardActions } from "../../components/CreditCard/CreditCardActions
 import { useCreditCardForm } from "./useCreditCardForm";
 import { Controller } from "react-hook-form";
 import { removeNonNumeric } from "../../utils/string";
+import { useMemo } from "react";
 
 type UserDetailsProps = {
   id: string;
@@ -23,8 +31,12 @@ const getPhoneContent = (user: User) => {
   if (!user.phone) {
     return "Não informado.";
   }
-  //   @TODO: country code parse
-  return `${user.phone.countryCode} ${user.phone.number}`;
+
+  const dialCode =
+    DIAL_CODES_BY_COUNTRY.find(
+      (country) => country.value === user.phone?.countryCode
+    )?.label ?? user.phone.countryCode;
+  return `${dialCode} ${user.phone.number}`;
 };
 
 const getAddressContent = (user: User) => {
@@ -58,6 +70,12 @@ export const UserDetails = ({ id, initialData }: UserDetailsProps) => {
       register,
     },
   } = useCreditCardForm({ userId: id, onSuccess: refetch });
+
+  const minExpirationDate = useMemo(() => {
+    const today = new Date();
+    today.setMonth(today.getMonth() + 1);
+    return parseExpirationValuesToInput(today.getFullYear(), today.getMonth());
+  }, []);
 
   if (!user) {
     return <></>;
@@ -111,6 +129,7 @@ export const UserDetails = ({ id, initialData }: UserDetailsProps) => {
                     ...rest,
                     inputMode: "numeric",
                     onChange: (e) => onChange(removeNonNumeric(e.target.value)),
+                    maxLength: INPUT_LENGTHS.defaultString,
                   }}
                   error={errors.number?.message}
                 />
@@ -121,14 +140,21 @@ export const UserDetails = ({ id, initialData }: UserDetailsProps) => {
                 id="credit-card/brand"
                 label="Bandeira"
                 isRequired
-                inputProps={{ ...register("brand") }}
+                inputProps={{
+                  ...register("brand"),
+                  maxLength: INPUT_LENGTHS.defaultString,
+                }}
                 error={errors.brand?.message}
               />
               <Input
                 id="credit-card/expiration"
                 label="Data de validade"
                 isRequired
-                inputProps={{ ...register("expiration"), type: "month" }}
+                inputProps={{
+                  ...register("expiration"),
+                  type: "month",
+                  min: minExpirationDate,
+                }}
                 error={errors.expiration?.message}
               />
             </div>
@@ -167,7 +193,9 @@ export const UserDetails = ({ id, initialData }: UserDetailsProps) => {
               ))}
             </div>
           ) : (
-            <p>O usuário não possui nenhum cartão cadastrado.</p>
+            <p className="text-sm">
+              O usuário não possui nenhum cartão cadastrado.
+            </p>
           )}
         </div>
       </section>

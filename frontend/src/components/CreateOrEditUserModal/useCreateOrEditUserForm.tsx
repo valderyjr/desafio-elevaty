@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "react-query";
 import {
-  DEFAULT_PHONE_COUNTRY_CODE,
+  COUNTRY_CODES,
   INPUT_ERROR_MESSAGES,
   INPUT_LENGTHS,
   REACT_QUERY_KEYS,
@@ -31,6 +31,7 @@ import {
 } from "libphonenumber-js";
 import { fetchZipCode } from "../../services/zip-code";
 import { formatZipCode } from "../../utils/string";
+import { useToastStore } from "../../hooks/toastStore";
 
 interface useCreateOrEditUserFormProps {
   onCloseModal: () => void;
@@ -135,7 +136,7 @@ export const useCreateOrEditUserForm = ({
       email: "",
       birthDate: "",
       phoneId: "",
-      countryCode: DEFAULT_PHONE_COUNTRY_CODE,
+      countryCode: COUNTRY_CODES.at(0),
       phoneNumber: "",
       city: "",
       complement: "",
@@ -146,6 +147,8 @@ export const useCreateOrEditUserForm = ({
       zipCode: "",
     },
   });
+
+  const { showToast } = useToastStore();
 
   const { mutateAsync: createUserMutate, isLoading: isLoadingCreateUser } =
     useMutation({
@@ -210,7 +213,11 @@ export const useCreateOrEditUserForm = ({
     onSearchZipCode();
 
     if (error) {
-      console.error("Deu ruim no seu cep!");
+      showToast({
+        children:
+          "Tivemos um erro ao buscar esse CEP. Insira os dados manualmente, por favor.",
+        color: "error",
+      });
       return;
     }
 
@@ -261,8 +268,11 @@ export const useCreateOrEditUserForm = ({
     return { phone };
   };
 
-  // @TODO: VALIDACOES NO HTML COMO MIN, MAX, DEFAULT VALUE
-  // @TODO: VALIDAÇÕES DE ERRO
+  // @TODO: MELHORAR TABELA
+  // @TODO: FOTOS E README
+  // @TODO: DOCUMENTAÇÃO COM SWAGGER
+  // @TODO: ERROS NAS QUERIES
+  // @TODO: VALIDAÇÕES DE ERROS FORMATADOS
 
   const validatePhone = async (value: string) => {
     if (value.length < INPUT_LENGTHS.required) {
@@ -375,10 +385,20 @@ export const useCreateOrEditUserForm = ({
       } else {
         await handleCreateUser(data);
       }
+
+      showToast({
+        color: "success",
+        children: `Usuário ${id ? "editado" : "criado"} com sucesso.`,
+      });
       onSuccess();
       onCloseModal();
     } catch (error) {
-      console.error("oi", error);
+      showToast({
+        color: "error",
+        children:
+          "Tivemos um erro interno. Tente novamente mais tarde, por favor.",
+      });
+      console.error(error);
     }
   };
 

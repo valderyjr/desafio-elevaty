@@ -40,10 +40,27 @@ export const MIN_PAGE_TO_BREAKPOINT = 5;
 export const DYNAMIC_PAGES_LENGTH = 3;
 export const DYNAMIC_PAGES_LENGTH_2 = 4;
 
-export const DEFAULT_PHONE_COUNTRY_CODE = {
-  value: "BR",
-  label: "BR",
-};
+export const COUNTRY_CODES = [
+  {
+    value: "BR",
+    label: "BR",
+  },
+  {
+    value: "US",
+    label: "US",
+  },
+];
+
+export const DIAL_CODES_BY_COUNTRY = [
+  {
+    value: "BR",
+    label: "+55",
+  },
+  {
+    value: "US",
+    label: "+1",
+  },
+];
 
 export const STATES = [
   { label: "AC", value: "AC" },

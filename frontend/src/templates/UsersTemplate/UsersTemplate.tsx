@@ -16,7 +16,7 @@ import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { Pagination } from "../../components/Pagination/Pagination";
 import { User } from "../../utils/types";
 import Link from "next/link";
-import { getCreditCardInvoice } from "../../services/credit-cards";
+import { useToastStore } from "../../hooks/toastStore";
 
 const renderName = (user: User) => (
   <p
@@ -39,10 +39,11 @@ const renderBirthDate = (user: User) => {
 };
 
 export const UsersTemplate = () => {
-  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [userIdToEdit, setUserIdToEdit] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
+
+  const { showToast } = useToastStore();
 
   const {
     data,
@@ -64,7 +65,17 @@ export const UsersTemplate = () => {
   };
 
   const handleDeleteUser = (id: string) => {
-    deleteUser(id, { onSuccess: () => refetchUsers() });
+    deleteUser(id, {
+      onSuccess: () => refetchUsers(),
+      onError: (error) => {
+        showToast({
+          color: "error",
+          children:
+            "Tivemos um erro interno. Tente novamente mais tarde, por favor.",
+        });
+        console.error(error);
+      },
+    });
   };
 
   const renderAction = (item: User) => {

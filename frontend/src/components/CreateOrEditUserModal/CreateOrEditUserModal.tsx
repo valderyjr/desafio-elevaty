@@ -4,20 +4,16 @@ import { Input } from "../Input/Input";
 import { Modal, ModalProps } from "../Modal/Modal";
 import { useCreateOrEditUserForm } from "./useCreateOrEditUserForm";
 import {
-  DEFAULT_PHONE_COUNTRY_CODE,
+  COUNTRY_CODES,
+  INPUT_LENGTHS,
   REACT_QUERY_KEYS,
   STATES,
 } from "../../utils/constants";
 import { getUser } from "../../services/users";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatStringDateToInput } from "../../utils/date";
 import { Select } from "../Select/Select";
 import { Controller } from "react-hook-form";
-
-const options = [
-  { label: "BR", value: "BR" },
-  { label: "US", value: "US" },
-];
 
 type CreateOrEditUserModalProps = {
   id?: string;
@@ -52,7 +48,7 @@ export const CreateOrEditUserModal = ({
       email: "",
       firstName: "",
       lastName: "",
-      countryCode: DEFAULT_PHONE_COUNTRY_CODE,
+      countryCode: COUNTRY_CODES.at(0),
       phoneNumber: "",
       phoneId: "",
       city: "",
@@ -107,10 +103,10 @@ export const CreateOrEditUserModal = ({
       email: data.email,
       birthDate: formatStringDateToInput(data.birthDate),
       countryCode: {
-        value: data.phone?.countryCode ?? DEFAULT_PHONE_COUNTRY_CODE.value,
+        value: data.phone?.countryCode ?? COUNTRY_CODES.at(0)?.value,
         label:
-          options.find((item) => item.value === data.phone?.countryCode)
-            ?.label ?? DEFAULT_PHONE_COUNTRY_CODE.label,
+          COUNTRY_CODES.find((item) => item.value === data.phone?.countryCode)
+            ?.label ?? COUNTRY_CODES.at(0)?.label,
       },
       phoneNumber: data.phone?.number ?? "",
       phoneId: data.phone?.id ?? "",
@@ -136,6 +132,12 @@ export const CreateOrEditUserModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isOpen]);
 
+  const maxBirthDate = useMemo(() => {
+    const today = new Date();
+    today.setDate(today.getDate() - 1);
+    return formatStringDateToInput(today.toISOString());
+  }, []);
+
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={`${action} cliente`}>
       <form
@@ -146,7 +148,10 @@ export const CreateOrEditUserModal = ({
           id="create-edit-user/first-name"
           label="Nome"
           isRequired
-          inputProps={{ ...register("firstName") }}
+          inputProps={{
+            ...register("firstName"),
+            maxLength: INPUT_LENGTHS.defaultString,
+          }}
           disabled={isLoadingUser}
           error={errors.firstName?.message}
         />
@@ -155,7 +160,10 @@ export const CreateOrEditUserModal = ({
           label="Sobrenome"
           isRequired
           disabled={isLoadingUser}
-          inputProps={{ ...register("lastName") }}
+          inputProps={{
+            ...register("lastName"),
+            maxLength: INPUT_LENGTHS.defaultString,
+          }}
           error={errors.lastName?.message}
         />
         <Input
@@ -163,7 +171,11 @@ export const CreateOrEditUserModal = ({
           label="Email"
           isRequired
           disabled={isLoadingUser}
-          inputProps={{ type: "email", ...register("email") }}
+          inputProps={{
+            type: "email",
+            ...register("email"),
+            maxLength: INPUT_LENGTHS.defaultString,
+          }}
           error={errors.email?.message}
         />
         <Input
@@ -171,10 +183,14 @@ export const CreateOrEditUserModal = ({
           label="Data de nascimento"
           isRequired
           disabled={isLoadingUser}
-          inputProps={{ type: "date", ...register("birthDate") }}
+          inputProps={{
+            type: "date",
+            ...register("birthDate"),
+            max: maxBirthDate,
+          }}
           error={errors.birthDate?.message}
         />
-        <div className="flex w-full gap-2">
+        <div className="flex w-full gap-2 flex-col md:flex-row">
           <Controller
             control={control}
             name="countryCode"
@@ -186,8 +202,7 @@ export const CreateOrEditUserModal = ({
                 formName={name}
                 onChange={onChange}
                 selected={value}
-                // @TODO: opcoes
-                options={options}
+                options={COUNTRY_CODES}
                 placeholder="Selecione um país"
                 disabled={isLoadingUser}
                 error={
@@ -217,13 +232,14 @@ export const CreateOrEditUserModal = ({
                   onBlur: async (e) => {
                     await validatePhone(e.target.value);
                   },
+                  maxLength: INPUT_LENGTHS.phoneNumber,
                 }}
                 isRequired
               />
             )}
           />
         </div>
-        <div className="flex w-full gap-2">
+        <div className="flex w-full gap-2 flex-col md:flex-row">
           <Controller
             control={control}
             name="zipCode"
@@ -239,6 +255,7 @@ export const CreateOrEditUserModal = ({
                   onChange: async (e) => {
                     await handleOnChangeZipCode(e);
                   },
+                  maxLength: INPUT_LENGTHS.zipCode,
                 }}
                 isRequired
               />
@@ -264,7 +281,7 @@ export const CreateOrEditUserModal = ({
             )}
           />
         </div>
-        <div className="flex w-full gap-2">
+        <div className="flex w-full gap-2 flex-col md:flex-row">
           <Input
             id="create-edit-user/city"
             label="Cidade"
@@ -272,6 +289,7 @@ export const CreateOrEditUserModal = ({
             error={errors.city?.message}
             inputProps={{
               ...register("city"),
+              maxLength: INPUT_LENGTHS.defaultString,
             }}
             isRequired
           />
@@ -282,11 +300,12 @@ export const CreateOrEditUserModal = ({
             error={errors.neighborhood?.message}
             inputProps={{
               ...register("neighborhood"),
+              maxLength: INPUT_LENGTHS.defaultString,
             }}
             isRequired
           />
         </div>
-        <div className="flex w-full gap-2">
+        <div className="flex w-full gap-2 flex-col md:flex-row">
           <Input
             id="create-edit-user/street"
             label="Logradouro"
@@ -294,6 +313,7 @@ export const CreateOrEditUserModal = ({
             error={errors.street?.message}
             inputProps={{
               ...register("street"),
+              maxLength: INPUT_LENGTHS.defaultString,
             }}
             isRequired
           />
@@ -304,6 +324,7 @@ export const CreateOrEditUserModal = ({
             error={errors.number?.message}
             inputProps={{
               ...register("number"),
+              maxLength: INPUT_LENGTHS.defaultString,
             }}
             isRequired
           />
@@ -316,6 +337,7 @@ export const CreateOrEditUserModal = ({
           error={errors.complement?.message}
           inputProps={{
             ...register("complement"),
+            maxLength: INPUT_LENGTHS.defaultString,
           }}
         />
         <p className="text-xs font-semibold italic">
