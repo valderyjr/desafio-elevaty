@@ -71,6 +71,17 @@ cd ./frontend/
 npm run build && npm run start
 ```
 
+### Informações sobre a API
+
+- Em caso de erro de validação na criação do cartão de crédito, usar [este](https://developer.paypal.com/api/rest/sandbox/card-testing/#link-creditcardgenerator) site para gerar números válidos de cartão de crédito.
+- [Como fazer requisições](./backend/README.md)
+
+### Imagens
+
+<img src="./docs/users.jpg" alt="Tela de exibição dos usuários"/>
+<img src="./docs/user-modal.jpg" alt="Tela de criação dos usuários"/>
+<img src="./docs/user-details.jpg" alt="Tela de exibição dos detalhes do usuário"/>
+
 ## Autor
 
 - [Valdery Junior](https://github.com/valderyjr/)

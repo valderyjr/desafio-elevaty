@@ -269,9 +269,6 @@ export const useCreateOrEditUserForm = ({
     return { phone };
   };
 
-  // @TODO: FOTOS E README
-  // @TODO: COM O JOAO PARA TESTAR
-
   const validatePhone = async (value: string) => {
     if (value.length < INPUT_LENGTHS.required) {
       setError("phoneNumber", { message: INPUT_ERROR_MESSAGES.required });

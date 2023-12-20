@@ -74,17 +74,18 @@ export class UsersService {
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     await this.findOne(id);
 
-    const hasOtherUserWithEmail =
-      await this.prismaClientService.user.findUnique({
-        where: {
-          email: updateUserDto.email,
-          AND: {
-            id: {
-              not: id,
+    const hasOtherUserWithEmail = updateUserDto.email
+      ? await this.prismaClientService.user.findUnique({
+          where: {
+            email: updateUserDto.email,
+            AND: {
+              id: {
+                not: id,
+              },
             },
           },
-        },
-      });
+        })
+      : false;
 
     if (hasOtherUserWithEmail) {
       throw new HttpException(

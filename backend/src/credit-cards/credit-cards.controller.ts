@@ -55,7 +55,7 @@ export class CreditCardsController {
 
   @Get('/invoice/:id')
   @Header('Content-Type', 'application/pdf')
-  @Header('Content-Disposition', 'attachment;')
+  @Header('Content-Disposition', 'attachment')
   async getInvoiceById(@Param('id') id: string): Promise<StreamableFile> {
     return await this.creditCardsService.getInvoiceById(id);
   }
