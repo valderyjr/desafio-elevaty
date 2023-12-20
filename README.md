@@ -55,7 +55,7 @@ npm install
 ```sh
 cd ./backend/
 npm run db:migrate
-npm run db:genreate
+npm run db:generate
 ```
 
 6. Rode o backend
