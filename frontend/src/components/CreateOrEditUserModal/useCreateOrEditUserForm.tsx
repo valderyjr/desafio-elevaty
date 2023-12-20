@@ -269,7 +269,6 @@ export const useCreateOrEditUserForm = ({
   };
 
   // @TODO: FOTOS E README
-  // @TODO: ERROS NAS QUERIES
   // @TODO: VALIDAÇÕES DE ERROS FORMATADOS
   // @TODO: DOCUMENTAÇÃO COM SWAGGER
 
