@@ -270,7 +270,6 @@ export const useCreateOrEditUserForm = ({
   };
 
   // @TODO: FOTOS E README
-  // @TODO: DOCUMENTAÇÃO COM SWAGGER
   // @TODO: COM O JOAO PARA TESTAR
 
   const validatePhone = async (value: string) => {
