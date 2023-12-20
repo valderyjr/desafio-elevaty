@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { formatStringDateToInput } from "../../utils/date";
 import { Select } from "../Select/Select";
 import { Controller } from "react-hook-form";
+import { useToastStore } from "../../hooks/toastStore";
 
 type CreateOrEditUserModalProps = {
   id?: string;
@@ -26,6 +27,7 @@ export const CreateOrEditUserModal = ({
   id,
   refetchUsers,
 }: CreateOrEditUserModalProps) => {
+  const { showToast } = useToastStore();
   const [hasSearchedZipCode, setHasSearchedZipCode] = useState(false);
 
   const {
@@ -36,6 +38,14 @@ export const CreateOrEditUserModal = ({
     queryKey: [REACT_QUERY_KEYS.getUser, id],
     enabled: !!id,
     queryFn: () => getUser(id ?? ""),
+    onError: (error) => {
+      showToast({
+        color: "error",
+        children:
+          "Tivemos um erro interno ao buscar os dados deste usuário. Tente novamente mais tarde, por favor.",
+      });
+      console.error(error);
+    },
   });
 
   const action = id ? "Editar" : "Criar";

@@ -52,6 +52,14 @@ export const UsersTemplate = () => {
   } = useQuery({
     queryKey: [REACT_QUERY_KEYS.getUsers, currentPage],
     queryFn: () => getUsers(TAKE, currentPage * TAKE),
+    onError: (error) => {
+      showToast({
+        color: "error",
+        children:
+          "Tivemos um erro interno ao buscar a lista de usuários. Tente novamente mais tarde, por favor.",
+      });
+      console.error(error);
+    },
   });
 
   const { mutate: deleteUser, isLoading: isLoadingDeleteUser } = useMutation({
