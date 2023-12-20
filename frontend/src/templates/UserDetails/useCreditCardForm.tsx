@@ -60,14 +60,6 @@ export const useCreditCardForm = ({
 
         const isInSameYearAndFutureMonth =
           year === today.getFullYear() && month > today.getMonth();
-        console.log(
-          month,
-          year,
-          today.getFullYear(),
-          today.getMonth(),
-          isInFutureYear,
-          isInSameYearAndFutureMonth
-        );
 
         return isInFutureYear || isInSameYearAndFutureMonth;
       }, INPUT_ERROR_MESSAGES.dateNextMonth),

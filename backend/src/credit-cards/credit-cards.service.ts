@@ -13,7 +13,11 @@ import { CreditCard } from './entities/credit-card.entity';
 import * as PDFDocument from 'pdfkit';
 import * as fs from 'fs';
 import * as path from 'path';
-import { getInvoiceFileName, pathToInvoicesFolder } from 'src/shared/constants';
+import {
+  MAX_CREDIT_CARDS_BY_USER,
+  getInvoiceFileName,
+  pathToInvoicesFolder,
+} from 'src/shared/constants';
 
 @Injectable()
 export class CreditCardsService {
@@ -21,6 +25,16 @@ export class CreditCardsService {
     private readonly prismaClientService: PrismaClientService,
     private readonly usersService: UsersService,
   ) {}
+
+  private isFutureExpiration(year: number, month: number): boolean {
+    const today = new Date();
+    const isInFutureYear = year > today.getFullYear();
+
+    const isInSameYearAndFutureMonth =
+      year === today.getFullYear() && month > today.getMonth();
+
+    return isInFutureYear || isInSameYearAndFutureMonth;
+  }
 
   private async findOne(id: string): Promise<CreditCard> {
     const creditCard = await this.prismaClientService.creditCard.findUnique({
@@ -83,7 +97,32 @@ export class CreditCardsService {
   }
 
   async create(createCreditCardDto: CreateCreditCardDto): Promise<CreditCard> {
+    const isValidExpiration = this.isFutureExpiration(
+      createCreditCardDto.expirationYear,
+      createCreditCardDto.expirationMonth,
+    );
+
+    if (!isValidExpiration) {
+      throw new HttpException(
+        ERROR_MESSAGES_ENUM.INVALID_CREDIT_CARD_EXPIRATION,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     await this.usersService.findOne(createCreditCardDto.userId);
+
+    const creditCardsByUser = await this.prismaClientService.creditCard.count({
+      where: {
+        userId: createCreditCardDto.userId,
+      },
+    });
+
+    if (creditCardsByUser >= MAX_CREDIT_CARDS_BY_USER) {
+      throw new HttpException(
+        ERROR_MESSAGES_ENUM.MAX_LENGTH_CREDIT_CARDS_BY_USER,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
     return await this.prismaClientService.creditCard.create({
       data: {
@@ -105,6 +144,9 @@ export class CreditCardsService {
 
     return await this.prismaClientService.creditCard.findMany({
       where: { userId },
+      orderBy: {
+        createdAt: 'asc',
+      },
     });
   }
 

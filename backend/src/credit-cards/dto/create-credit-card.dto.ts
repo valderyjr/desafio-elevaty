@@ -31,7 +31,7 @@ export class CreateCreditCardDto {
   expirationYear: number;
 
   @IsString()
-  @IsCreditCard({ message: ERROR_MESSAGES_ENUM.INVALID_CREDIT_CARD })
+  @IsCreditCard({ message: ERROR_MESSAGES_ENUM.INVALID_CREDIT_CARD_NUMBER })
   number: string;
 
   @IsString()

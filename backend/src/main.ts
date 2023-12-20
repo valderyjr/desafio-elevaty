@@ -21,6 +21,10 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(4000);
+  await app.listen(4000, '0.0.0.0');
+
+  // @TODO: COLOCAR ONDE ESTÁ RODANDO
+
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

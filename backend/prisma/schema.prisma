@@ -52,12 +52,13 @@ model Address {
 }
 
 model CreditCard {
-  id              String  @id @default(uuid())
-  brand           String  @db.VarChar(255)
-  expirationMonth Int     @db.SmallInt()
-  expirationYear  Int     @db.SmallInt()
-  number          String  @db.Char(16)
+  id              String   @id @default(uuid())
+  brand           String   @db.VarChar(255)
+  expirationMonth Int      @db.SmallInt()
+  expirationYear  Int      @db.SmallInt()
+  number          String   @db.Char(16)
   invoiceUrl      String?
+  createdAt       DateTime @default(now())
 
   // relations
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
