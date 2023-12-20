@@ -13,12 +13,26 @@ export const formatStringDateToInput = (date: string) => {
 };
 
 export function parseInputStringToDate(stringDate: string) {
-  const dat = new Date(stringDate.replaceAll("-", "/"));
+  const date = new Date(stringDate.replaceAll("-", "/"));
 
-  // validate if is really a date
-  if (isNaN(dat.getTime())) {
+  // this validate if is really a date
+  if (isNaN(date.getTime())) {
     return undefined;
   }
 
-  return dat;
+  return date;
+}
+
+export function getExpirationValuesFromInput(stringDate: string) {
+  const splittedDate = stringDate.split("-");
+
+  const year = splittedDate.at(0) ? Number(splittedDate.at(0)) : undefined;
+
+  const month = splittedDate.at(1) ? Number(splittedDate.at(1)) - 1 : undefined;
+
+  return { year, month };
+}
+
+export function parseExpirationValuesToInput(year: number, month: number) {
+  return `${year}-${String(month + 1).padStart(2, "0")}`;
 }

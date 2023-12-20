@@ -8,6 +8,10 @@ export const REACT_QUERY_KEYS = {
   updatePhone: "updatePhone",
   createAddress: "createAddress",
   updateAddress: "updateAddress",
+  createCreditCard: "createCreditCard",
+  updateCreditCard: "updateCreditCard",
+  deleteCreditCard: "deleteCreditCard",
+  getCreditCardInvoice: "getCreditCardInvoice",
 };
 
 export const INPUT_LENGTHS = {
@@ -16,6 +20,7 @@ export const INPUT_LENGTHS = {
   phoneNumber: 20,
   zipCode: 9,
   state: 2,
+  expirationDate: 4,
 };
 
 export const INPUT_ERROR_MESSAGES = {
@@ -23,11 +28,13 @@ export const INPUT_ERROR_MESSAGES = {
   maxLength: "Você excedeu o limite de caracteres.",
   email: "Digite um email válido.",
   datePreviousToday: "A data selecionada precisa ser anterior a hoje.",
+  dateNextMonth: "A data selecionada precisa ser posterior ao mês atual.",
   invalidPhone: "Digite um número de telefone válido.",
   invalidZipCode: "Digite um CEP válido com 8 caracteres.",
+  dateMinLength: "Este campo deve possuir no mínimo 4 caracteres.",
 };
 
-export const TAKE = 2;
+export const TAKE = 10;
 
 export const MIN_PAGE_TO_BREAKPOINT = 5;
 export const DYNAMIC_PAGES_LENGTH = 3;

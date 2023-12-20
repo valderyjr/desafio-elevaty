@@ -8,6 +8,8 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { MAX_DIGITS_YEAR, MIN_DIGITS_YEAR } from 'src/shared/constants';
+import { ERROR_MESSAGES_ENUM } from 'src/shared/errors-messages/errors';
 
 export class CreateCreditCardDto {
   @IsUUID(4)
@@ -18,18 +20,20 @@ export class CreateCreditCardDto {
   brand: string;
 
   @IsNumber()
-  @Min(1)
-  @Max(12)
+  @Min(0)
+  @Max(11)
   expirationMonth: number;
 
   @IsNumber()
+  // Verify if number has 4 digits
+  @Min(MIN_DIGITS_YEAR)
+  @Max(MAX_DIGITS_YEAR)
   expirationYear: number;
 
   @IsString()
-  @IsCreditCard()
+  @IsCreditCard({ message: ERROR_MESSAGES_ENUM.INVALID_CREDIT_CARD })
   number: string;
 
-  // @TODO: Preciso lidar com isso aqui ainda
   @IsString()
   @IsOptional()
   invoiceUrl?: string;

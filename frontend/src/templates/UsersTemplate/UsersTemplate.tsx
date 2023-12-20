@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Button } from "../../components/Button/Button";
 import { Table, TableColumn } from "../../components/Table/Table";
 import { formatStringDate } from "../../utils/date";
@@ -16,6 +16,7 @@ import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { Pagination } from "../../components/Pagination/Pagination";
 import { User } from "../../utils/types";
 import Link from "next/link";
+import { getCreditCardInvoice } from "../../services/credit-cards";
 
 const renderName = (user: User) => (
   <p
@@ -38,6 +39,7 @@ const renderBirthDate = (user: User) => {
 };
 
 export const UsersTemplate = () => {
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [userIdToEdit, setUserIdToEdit] = useState("");
   const [currentPage, setCurrentPage] = useState(0);

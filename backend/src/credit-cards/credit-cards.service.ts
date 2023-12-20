@@ -1,10 +1,19 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  StreamableFile,
+} from '@nestjs/common';
 import { CreateCreditCardDto } from './dto/create-credit-card.dto';
 import { UpdateCreditCardDto } from './dto/update-credit-card.dto';
 import { PrismaClientService } from 'src/shared/prisma/prisma-client.service';
 import { UsersService } from 'src/users/users.service';
 import { ERROR_MESSAGES_ENUM } from 'src/shared/errors-messages/errors';
 import { CreditCard } from './entities/credit-card.entity';
+import * as PDFDocument from 'pdfkit';
+import * as fs from 'fs';
+import * as path from 'path';
+import { getInvoiceFileName, pathToInvoicesFolder } from 'src/shared/constants';
 
 @Injectable()
 export class CreditCardsService {
@@ -28,6 +37,49 @@ export class CreditCardsService {
     }
 
     return creditCard;
+  }
+
+  private savePdfToFile(
+    pdf: PDFKit.PDFDocument,
+    fileName: string,
+    creditCard: CreditCard,
+  ): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      // To determine when the PDF has finished being written successfully
+      // we need to confirm the following 2 conditions:
+      //
+      //   1. The write stream has been closed
+      //   2. PDFDocument.end() was called syncronously without an error being thrown
+
+      let pendingStepCount = 2;
+
+      const stepFinished = () => {
+        if (--pendingStepCount == 0) {
+          resolve();
+        }
+      };
+
+      const writeStream = fs.createWriteStream(fileName);
+      writeStream.on('close', stepFinished);
+      writeStream.on('error', reject);
+
+      pdf.pipe(writeStream);
+
+      pdf.text(creditCard.number);
+      pdf.text(creditCard.id);
+
+      pdf.end();
+
+      stepFinished();
+    });
+  }
+
+  private async getPdfFile(filePath: string): Promise<fs.ReadStream> {
+    return await new Promise<fs.ReadStream>((resolve, reject) => {
+      const stream = fs.createReadStream(filePath);
+      stream.on('data', resolve);
+      stream.on('error', reject);
+    });
   }
 
   async create(createCreditCardDto: CreateCreditCardDto): Promise<CreditCard> {
@@ -73,5 +125,28 @@ export class CreditCardsService {
     await this.prismaClientService.creditCard.delete({
       where: { id },
     });
+  }
+
+  async getInvoiceById(id: string): Promise<StreamableFile> {
+    const creditCard = await this.findOne(id);
+
+    const dirPath = path.join(__dirname, pathToInvoicesFolder);
+    const fileName = getInvoiceFileName(creditCard.id);
+    const filePath = `${dirPath}${fileName}`;
+
+    if (!creditCard.invoiceUrl) {
+      const doc = new PDFDocument();
+
+      await this.savePdfToFile(doc, filePath, creditCard);
+
+      await this.prismaClientService.creditCard.update({
+        where: { id },
+        data: { invoiceUrl: fileName },
+      });
+    }
+
+    const invoicePdf = await this.getPdfFile(filePath);
+
+    return new StreamableFile(invoicePdf);
   }
 }

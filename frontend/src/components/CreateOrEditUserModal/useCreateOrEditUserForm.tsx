@@ -29,7 +29,7 @@ import {
   CountryCode,
   parsePhoneNumberWithError,
 } from "libphonenumber-js";
-import { fetchZipCode } from "../../services/zipCode";
+import { fetchZipCode } from "../../services/zip-code";
 import { formatZipCode } from "../../utils/string";
 
 interface useCreateOrEditUserFormProps {
@@ -156,7 +156,7 @@ export const useCreateOrEditUserForm = ({
   const { mutateAsync: updateUserMutate, isLoading: isLoadingUpdateUser } =
     useMutation({
       mutationKey: [REACT_QUERY_KEYS.updateUser],
-      mutationFn: ({ id, data }: UpdateMutation<User>) =>
+      mutationFn: ({ id, data }: UpdateMutation<Omit<User, "creditCards">>) =>
         updateUserMutation(id, data),
     });
 
@@ -260,6 +260,9 @@ export const useCreateOrEditUserForm = ({
 
     return { phone };
   };
+
+  // @TODO: VALIDACOES NO HTML COMO MIN, MAX, DEFAULT VALUE
+  // @TODO: VALIDAÇÕES DE ERRO
 
   const validatePhone = async (value: string) => {
     if (value.length < INPUT_LENGTHS.required) {

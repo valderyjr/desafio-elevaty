@@ -37,15 +37,25 @@ export type Address = {
   complement?: string | null;
 };
 
+export type CreditCard = {
+  id: string;
+  userId: string;
+  brand: string;
+  expirationMonth: number;
+  expirationYear: number;
+  number: string;
+  invoiceUrl?: string | null;
+};
+
 export type User = {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
   birthDate: string;
+  creditCards: CreditCard[];
   phone?: Phone | null;
   address?: Address | null;
-  // creditCards: CreditCard[];
 };
 
 export type UpdateMutation<T> = {

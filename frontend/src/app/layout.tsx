@@ -19,10 +19,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className="w-full h-full text-brand-secondary">
+    <html
+      lang="pt-BR"
+      className="w-full min-h-full h-full text-brand-secondary"
+    >
       <body className={`${inter.className} w-full h-full flex flex-col`}>
         <Header />
-        <main className="p-4 max-w-7xl mx-auto h-full w-full">
+        <main className="p-4 max-w-7xl mx-auto w-full">
           <ReactQueryProvider>{children}</ReactQueryProvider>
         </main>
       </body>

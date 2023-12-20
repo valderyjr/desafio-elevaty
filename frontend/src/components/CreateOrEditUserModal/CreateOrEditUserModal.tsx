@@ -318,6 +318,9 @@ export const CreateOrEditUserModal = ({
             ...register("complement"),
           }}
         />
+        <p className="text-xs font-semibold italic">
+          Você pode criar cartões para este usuário na tela de detalhes.
+        </p>
         <Button type="submit" loading={loadingMutation || isLoadingUser}>
           {action}
         </Button>

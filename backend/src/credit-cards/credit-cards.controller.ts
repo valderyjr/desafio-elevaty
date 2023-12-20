@@ -8,6 +8,8 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  StreamableFile,
+  Header,
 } from '@nestjs/common';
 import { CreditCardsService } from './credit-cards.service';
 import { CreateCreditCardDto } from './dto/create-credit-card.dto';
@@ -49,5 +51,12 @@ export class CreditCardsController {
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return await this.creditCardsService.remove(id);
+  }
+
+  @Get('/invoice/:id')
+  @Header('Content-Type', 'application/pdf')
+  @Header('Content-Disposition', 'attachment;')
+  async getInvoiceById(@Param('id') id: string): Promise<StreamableFile> {
+    return await this.creditCardsService.getInvoiceById(id);
   }
 }
